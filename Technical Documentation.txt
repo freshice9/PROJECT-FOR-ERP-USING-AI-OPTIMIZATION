@@ -1,0 +1,1079 @@
+Technical Documentation, Requirements and Development Report
+Project Type: Academic ERP / Human Resources AI Prototype
+Application: Predictive Workforce Forecasting and Optimization
+Technology: Python, Streamlit, XGBoost, Random Forest, Google OR-Tools
+Dataset: Synthetic ERP and HR workforce data
+Development Period: August 25, 2026 – September 3, 2026
+Document Date: September 3, 2026
+Version: 1.0
+
+1. Project Overview
+The ERP Predictive Workforce Optimization system is an artificial-intelligence based prototype designed to support Human Resources and operational workforce planning.
+
+The application combines:
+
+Machine Learning for predicting the number of labor hours required by incoming ERP work orders.
+Operations Research for determining which employees should be assigned to those tasks.
+Cost analysis for comparing optimized workforce allocation against a simpler manual scheduling strategy.
+Workforce analytics for identifying employees with excessive or insufficient utilization.
+Interactive ERP planning through a Streamlit web interface.
+The system follows a predictive-to-prescriptive architecture:
+
+ERP Work Orders → Data Preparation → ML Forecast → Predicted Labor Hours → Optimization → Workforce Allocation → Cost & HR Analysis
+
+The main purpose is not simply to predict workload, but to use those predictions to make workforce allocation decisions.
+
+2. Project Objectives
+The primary objective is to develop a prototype ERP workforce-planning module capable of answering two questions:
+
+How much workforce capacity will incoming work require?
+
+and:
+
+Which employees should perform that work?
+
+The specific objectives are:
+
+Forecast required labor hours.
+Compare two machine-learning regression models.
+Evaluate model performance using MAE, RMSE and R².
+Provide an interactive ERP planning interface.
+Match employees to tasks according to skill requirements.
+Respect employee working-hour limits.
+Account for overtime.
+Consider employee task preferences.
+Consider task priority.
+Minimize workforce labor cost.
+Compare AI optimization against a manual baseline.
+Calculate workforce utilization.
+Identify employees who may be overloaded or underutilized.
+Provide HR-oriented recommendations.
+Produce a downloadable Google Colab notebook.
+3. Scope of the System
+3.1 Included
+The current prototype includes:
+
+Synthetic ERP work-order data.
+Synthetic employee data.
+Data cleaning.
+Feature preparation.
+XGBoost regression.
+Random Forest regression.
+Train/test splitting.
+Model evaluation.
+Workload prediction.
+Mixed Integer Programming optimization.
+Employee skill constraints.
+Employee capacity constraints.
+Overtime constraints.
+Employee preferences.
+Task priority.
+Labor-cost optimization.
+Manual baseline comparison.
+Workforce utilization analysis.
+Interactive charts and tables.
+Streamlit dashboard.
+Technical report embedded inside the application.
+Downloadable .ipynb notebook generation.
+3.2 Not Included
+The current prototype does not connect directly to:
+
+SAP.
+Oracle ERP.
+Microsoft Dynamics.
+A real payroll system.
+A real employee database.
+A real attendance system.
+Live ERP APIs.
+Real employee calendars.
+Vacation-management systems.
+Real-time employee availability.
+Real labor-law databases.
+These could be added in a production implementation.
+
+4. System Architecture
+The application consists of five major logical layers.
+
+Layer 1 — ERP Data Input
+The user enters or edits:
+
+Department.
+Task complexity.
+Estimated deliverables.
+Required skill level.
+Task priority.
+Productivity index.
+Shift efficiency.
+Employee information includes:
+
+Employee ID.
+Skill level.
+Hourly rate.
+Regular maximum hours.
+Overtime maximum hours.
+Preferred task IDs.
+The Streamlit data_editor component provides an interactive interface for editing these records.
+
+Layer 2 — Data Preparation
+The application validates and cleans the input data.
+
+Examples include:
+
+Converting numerical values to numeric types.
+Filling missing values.
+Limiting values to sensible ranges.
+Converting skill levels to integers.
+Converting priority levels to integers.
+Cleaning employee identifiers.
+Cleaning employee task preferences.
+This functionality is implemented through:
+
+clean_tasks()
+clean_employees()
+Layer 3 — Machine Learning
+Two regression algorithms are available:
+
+XGBoost Regressor.
+Random Forest Regressor.
+The models predict:
+
+Required labor hours per work order
+
+The user can switch between models from the Streamlit sidebar.
+
+Layer 4 — Optimization
+Predicted workload is passed into a Google OR-Tools Mixed Integer Programming model.
+
+The optimizer considers:
+
+Employee skill.
+Employee capacity.
+Overtime capacity.
+Employee preferences.
+Task priority.
+Hourly labor cost.
+The optimizer produces a workforce assignment.
+
+Layer 5 — Reporting
+The final results are displayed through:
+
+Dashboard metrics.
+Forecast tables.
+Charts.
+Workforce allocation tables.
+Cost comparisons.
+Utilization analysis.
+HR recommendations.
+Technical documentation.
+5. Machine Learning Requirements
+5.1 Training Dataset
+The current implementation generates a synthetic dataset containing:
+
+1,800 samples
+
+Each sample contains:
+
+Department.
+Complexity.
+Estimated deliverables.
+Required skill level.
+Priority.
+Productivity index.
+Shift efficiency.
+Actual workload hours.
+The departments are:
+
+IT_Dev.
+Manufacturing.
+SupplyChain.
+Finance.
+5.2 Input Features
+Feature	Description
+Department	Business department associated with the task
+Complexity	Task complexity from 1–5
+Est. Deliverables	Number of expected deliverables
+Required Skill	Required employee skill level
+Priority	Task priority from 1–3
+Productivity Index	Relative employee/workforce productivity
+Shift Efficiency	Efficiency associated with the working shift
+
+5.3 Target Variable
+The target variable is:
+
+actual_hours
+
+This represents the labor hours required to complete the task.
+
+The synthetic target is generated from a workload equation involving:
+
+Complexity.
+Number of deliverables.
+Required skill.
+Priority.
+Productivity.
+Shift efficiency.
+Random noise.
+This means that the current model is demonstrating the ML methodology using simulated data rather than historical ERP records.
+
+6. Machine Learning Models
+6.1 XGBoost
+The application uses:
+
+XGBRegressor
+
+Configured with:
+
+n_estimators = 160
+max_depth = 5
+learning_rate = 0.04
+subsample = 0.9
+colsample_bytree = 0.9
+objective = "reg:squarederror"
+random_state = 42
+XGBoost is appropriate for structured business data because it can model nonlinear relationships between variables.
+
+6.2 Random Forest
+The second model is:
+
+RandomForestRegressor
+
+Configured with:
+
+n_estimators = 160
+max_depth = 8
+random_state = 42
+n_jobs = -1
+Random Forest provides an alternative ensemble-based regression approach.
+
+7. Data Encoding
+The categorical department feature is converted using one-hot encoding:
+
+pd.get_dummies()
+
+This converts department categories into numerical variables that can be processed by the machine-learning models.
+
+The prediction function then reindexes the generated features to ensure that the prediction data matches the columns used during training.
+
+This is particularly important because a new ERP input may contain a different combination of departments from the training dataset.
+
+8. Model Evaluation
+The application calculates three main regression metrics.
+
+MAE — Mean Absolute Error
+MAE measures the average absolute difference between predicted and actual workload.
+
+Lower MAE indicates better prediction accuracy.
+
+The result is expressed in hours.
+
+RMSE — Root Mean Squared Error
+RMSE gives greater importance to large prediction errors.
+
+Lower RMSE is preferred.
+
+R² — Coefficient of Determination
+R² measures the amount of variance in the target variable explained by the model.
+
+The project requirement is interpreted as:
+
+R² ≥ 0.85
+
+However, because this prototype generates its own synthetic data, the actual R² value must be obtained by running the application.
+
+The documentation should therefore report the measured value rather than claiming a predetermined result.
+
+9. Feature Importance
+The XGBoost model exposes feature-importance values.
+
+The application creates a table containing:
+
+Feature.
+Importance.
+The eight most important features are displayed graphically.
+
+This provides basic model interpretability and helps identify which variables have the greatest influence on the workload prediction.
+
+10. ERP Work-Order Data
+The application starts with four example work orders.
+
+Each work order contains:
+
+Department.
+Complexity.
+Estimated deliverables.
+Required skill.
+Priority.
+Productivity index.
+Shift efficiency.
+The initial departments represent:
+
+IT development.
+Manufacturing.
+Supply Chain.
+Finance.
+Users can add additional rows dynamically through the Streamlit interface.
+
+11. Employee Data
+The prototype includes four example employees.
+
+Each employee has:
+
+Employee ID.
+Skill level.
+Hourly rate.
+Regular maximum hours.
+Overtime maximum hours.
+Preferred tasks.
+The employee skill scale is:
+
+Skill	Meaning
+0	Basic
+1	Intermediate
+2	Advanced
+
+The system prevents employees from receiving tasks requiring a higher skill level than they possess.
+
+12. Data Validation
+The application contains explicit validation and cleaning rules.
+
+Task validation
+The system restricts:
+
+Complexity: 1–5.
+Deliverables: 1–20.
+Required skill: 0–2.
+Priority: 1–3.
+Productivity index: 0.5–1.5.
+Shift efficiency: 0.5–1.5.
+Missing values are replaced with predefined defaults.
+
+Employee validation
+Employee values are restricted to reasonable ranges.
+
+For example:
+
+Skill: 0–2.
+Hourly rate: $1–$500.
+Regular capacity: 1–100 hours.
+Overtime capacity: 0–50 hours.
+This prevents invalid data from being directly passed into the optimization system.
+
+13. Workforce Optimization
+The optimization engine uses:
+
+Google OR-Tools
+
+and specifically the linear solver interface with the SCIP optimization backend.
+
+The optimization problem is formulated as a Mixed Integer Programming problem.
+
+14. Decision Variables
+For every task and employee combination, the model creates a binary variable:
+
+x(i,j)
+
+where:
+
+1 = employee j performs task i
+0 = employee j does not perform task i
+Overtime is represented by a continuous variable for each employee.
+
+15. Optimization Constraints
+Constraint 1 — Every Task Must Be Assigned
+Each task must receive exactly one employee.
+
+Therefore:
+
+Sum of employee assignment variables = 1
+
+for each task.
+
+Constraint 2 — Skill Compatibility
+If an employee's skill level is below the required skill level of a task, the assignment variable is forced to zero.
+
+Therefore, an employee cannot be assigned work beyond their configured skill level.
+
+Constraint 3 — Employee Capacity
+Each employee has:
+
+Regular capacity.
+Overtime capacity.
+The total predicted workload assigned to an employee cannot exceed their combined available capacity.
+
+Constraint 4 — Overtime
+The optimization engine calculates how many assigned hours exceed the employee's regular capacity.
+
+These hours are treated as overtime.
+
+16. Optimization Objective
+The optimizer attempts to minimize total workforce cost.
+
+The assignment cost includes:
+
+Predicted task hours.
+Employee hourly rate.
+Employee preference incentives.
+Task priority incentives.
+Overtime also receives an additional cost.
+
+The objective therefore attempts to balance:
+
+Low labor cost + suitable employee assignment + priority + preferences + capacity
+
+17. Employee Preferences
+Employees can specify preferred task IDs.
+
+For example:
+
+102,103
+
+indicates that the employee prefers tasks 102 and 103.
+
+The optimization model provides a configurable preference bonus.
+
+This allows the user to determine how strongly employee preferences should influence scheduling.
+
+18. Task Priority
+Task priority is represented as:
+
+Priority	Meaning
+1	Highest
+2	Medium
+3	Lower
+
+The optimization objective provides a stronger reward to higher-priority tasks.
+
+The priority weight can be changed through the sidebar.
+
+19. Overtime Configuration
+The user can change the overtime multiplier.
+
+The default value is:
+
+1.5×
+
+For example, if an employee earns $40/hour, overtime is calculated at:
+
+$40 × 1.5 = $60/hour
+
+The slider allows different overtime assumptions to be tested.
+
+20. Manual Baseline
+To demonstrate the value of optimization, the system calculates a manual baseline.
+
+The baseline uses a much simpler strategy:
+
+Identify employees who meet the required skill.
+Select the cheapest eligible employee.
+Consider available capacity.
+Use overtime where required.
+Calculate the resulting labor cost.
+The baseline does not globally optimize the entire workforce.
+
+The AI optimizer, in contrast, considers all assignments simultaneously.
+
+This creates a meaningful comparison between:
+
+Greedy/manual scheduling
+
+and:
+
+Global optimization.
+
+21. Cost Analysis
+The application calculates:
+
+Manual baseline cost.
+AI optimized cost.
+Estimated savings.
+Savings percentage.
+The savings calculation is:
+
+Savings = Manual Baseline − AI Optimized Cost
+
+and:
+
+Savings % = Savings / Manual Baseline × 100
+
+Because the current project uses synthetic data, these savings should be described as:
+
+illustrative simulated savings
+
+rather than a real-world financial forecast.
+
+22. Workforce Utilization
+Employee utilization is calculated using:
+
+Utilization = Total Assigned Hours / Total Available Capacity × 100
+
+Total capacity consists of:
+
+Regular Hours + Overtime Capacity
+
+The system then categorizes employees approximately as:
+
+90% or above: highly utilized.
+35% or below: potentially underutilized.
+Between these levels: generally balanced.
+23. HR Recommendations
+The system automatically generates recommendations.
+
+For highly utilized employees, the application recommends considering:
+
+Task reallocation.
+Additional workforce capacity.
+Reduced future workload.
+For employees with low utilization, the system identifies them as candidates for:
+
+Additional compatible work.
+Reallocation from overloaded employees.
+If utilization is balanced, the application reports that no immediate reallocation is recommended.
+
+24. User Interface
+The application is implemented with:
+
+Streamlit
+
+The interface contains six main tabs.
+
+Dashboard
+Provides:
+
+Active ML model.
+R².
+Number of ERP tasks.
+Number of employees.
+Model comparison.
+System architecture.
+ERP Planning
+Allows users to edit:
+
+Work orders.
+Employee information.
+ML Forecast
+Displays:
+
+Predicted workload.
+Average task workload.
+Largest task.
+Workload chart.
+Feature importance.
+Workforce Optimization
+Displays:
+
+Optimized cost.
+Total workload.
+Overtime.
+Average utilization.
+Employee assignments.
+Task-to-employee allocation.
+Workforce utilization.
+Employee cost.
+HR recommendations.
+Cost Analysis
+Displays:
+
+Manual baseline cost.
+AI optimized cost.
+Estimated savings.
+Cost comparison.
+Manual assignments.
+Technical Report
+Contains the project's:
+
+Objective.
+Data explanation.
+ML methodology.
+Optimization methodology.
+Expected results.
+Business value.
+Limitations.
+Future improvements.
+25. Visual Design Requirements
+The application uses custom CSS for the Streamlit interface.
+
+The design includes:
+
+Dark blue sidebar.
+Cyan/blue primary color.
+White information cards.
+Rounded corners.
+Dashboard metrics.
+Gradient hero section.
+Colored information panels.
+Responsive wide layout.
+The design is intended to resemble a modern enterprise dashboard rather than a basic machine-learning notebook.
+
+26. Software Requirements
+Programming Language
+Python 3
+
+Python is used for:
+
+Data processing.
+Machine learning.
+Optimization.
+UI development.
+Report generation.
+Required Python Packages
+The project requires:
+
+numpy
+pandas
+streamlit
+xgboost
+scikit-learn
+ortools
+The standard json library is also used.
+
+Recommended Installation
+pip install numpy pandas streamlit xgboost scikit-learn ortools
+
+27. Recommended Software Environment
+Component	Requirement
+Operating System  Windows 10/11, macOS or Linux
+Python	Python 3.10+
+IDE	VS Code, PyCharm or Google Colab
+Browser	Chrome, Edge, Firefox or Safari
+Package Manager	pip
+Interface	Streamlit
+Optimization	OR-Tools + SCIP
+ML Framework	XGBoost + scikit-learn
+
+Google Colab can also be used for the ML and optimization components.
+
+28. Hardware Requirements
+Because the current dataset contains only 1,800 synthetic records and the optimization problem is relatively small, the hardware requirements are modest.
+
+Minimum Hardware
+Component	Minimum
+CPU	Dual-core processor
+RAM	4 GB
+Storage	2 GB free
+Internet	Required for initial package installation
+GPU	Not required
+Display	1366×768 or higher
+
+Recommended Hardware
+Component	Recommended
+CPU	Intel Core i5 / AMD Ryzen 5 or better
+RAM	8 GB or more
+Storage	5 GB free
+GPU	Not required
+Display	1920×1080
+Internet	Stable broadband
+
+High-Scale Production Hardware
+For a significantly larger real-world ERP implementation, a stronger server could be used:
+
+8+ CPU cores.
+16–32 GB RAM.
+SSD storage.
+Optional GPU for significantly larger ML workloads.
+Dedicated database server.
+Reliable network connection.
+A GPU is not required for the current project.
+
+29. Why a GPU Is Not Required
+The application uses tabular regression rather than a deep neural network.
+
+The current dataset contains only:
+
+1,800 samples
+
+and the models use:
+
+160 trees
+
+for XGBoost and Random Forest.
+
+Consequently, a normal modern CPU is sufficient for training and inference.
+
+The OR-Tools optimization problem is also small enough for CPU execution.
+
+30. Performance and Caching
+The application uses:
+
+@st.cache_resource
+
+for model training.
+
+This prevents Streamlit from unnecessarily retraining the ML models every time the interface is interacted with.
+
+The optimization process also uses a session-state signature to avoid repeatedly solving the optimization problem when relevant inputs have not changed.
+
+This improves application responsiveness.
+
+31. Session State
+Streamlit session state stores:
+
+Optimization signature.
+Optimization results.
+Optimization cost.
+Predicted tasks.
+This allows results to persist between Streamlit interactions.
+
+32. Colab Support
+The application contains a function called:
+
+create_colab_notebook()
+
+This dynamically creates a Jupyter Notebook in JSON format.
+
+The generated notebook includes:
+
+Project introduction.
+Package installation.
+Methodology.
+Required imports.
+Model evaluation explanation.
+Optimization explanation.
+The notebook can be downloaded from the sidebar as:
+
+ERP_Predictive_Workforce_Optimization.ipynb
+
+33. Data Security and Privacy
+The current implementation intentionally uses synthetic employee data.
+
+This is important because real HR data can contain confidential information such as:
+
+Employee identity.
+Salary.
+Performance.
+Working hours.
+Availability.
+Employment information.
+The current prototype does not require real employee information.
+
+If deployed in an actual organization, the system should implement:
+
+Authentication.
+Role-based access control.
+Encryption.
+Secure database connections.
+Audit logs.
+Data retention policies.
+Access restrictions.
+Secure API authentication.
+GDPR/privacy compliance where applicable.
+34. Testing Requirements
+Testing should cover the following areas.
+
+Functional Testing
+Verify that:
+
+The Streamlit application starts successfully.
+Both ML models can be selected.
+Tasks can be added.
+Employees can be added.
+Missing values are handled.
+Invalid numeric values are constrained.
+Predictions are generated.
+Optimization completes.
+Cost analysis works.
+Reports are displayed.
+The Colab notebook downloads successfully.
+ML Testing
+Verify:
+
+Training completes.
+XGBoost produces predictions.
+Random Forest produces predictions.
+MAE is calculated.
+RMSE is calculated.
+R² is calculated.
+Feature importance is generated.
+Optimization Testing
+Verify:
+
+Every task receives an employee.
+Employees below the required skill level cannot receive tasks.
+Regular capacity is respected.
+Overtime capacity is respected.
+Preferences influence results.
+Priority influences the objective.
+Cost is calculated correctly.
+Infeasible schedules generate an appropriate error message.
+35. Example Test Scenarios
+Test 1 — Normal Workforce
+Four tasks and four employees are entered.
+
+Expected result: A feasible optimized schedule is produced.
+
+Test 2 — Insufficient Skill
+A task requiring skill level 2 is entered while only skill-level 0 employees are available.
+
+Expected result: The optimization reports that no feasible schedule exists.
+
+Test 3 — High Workload
+A large number of tasks are added.
+
+Expected result: The system uses available regular and overtime capacity and may report infeasibility if capacity is exceeded.
+
+Test 4 — Employee Preference
+An employee is given a preference for a specific task.
+
+Expected result: The preference bonus can influence the selected assignment.
+
+Test 5 — Overtime Multiplier
+The overtime multiplier is changed from 1.5 to 2.0.
+
+Expected result: The cost of overtime increases and may influence the optimized assignment.
+
+36. Important Technical Limitations
+The current prototype has several limitations that should be acknowledged in the final academic report.
+
+Synthetic Training Data
+The ML dataset is generated programmatically.
+
+Therefore, the model does not represent real organizational workforce behavior.
+
+Synthetic Target Variable
+The actual_hours target is generated using a predefined mathematical relationship.
+
+This means that model performance may be considerably easier to achieve than with noisy real-world ERP data.
+
+Limited Employee Attributes
+Real workforce allocation normally requires more information, such as:
+
+Availability.
+Vacation.
+Sick leave.
+Shift schedule.
+Location.
+Certifications.
+Department membership.
+Current workload.
+Employment status.
+These are not currently modeled.
+
+Simplified Optimization
+The optimization model assigns entire tasks to a single employee.
+
+A production ERP system may need to support tasks being divided between multiple employees.
+
+Simplified Scheduling
+The current system optimizes workload allocation but does not create a detailed calendar schedule containing:
+
+Start times.
+End times.
+Shift dates.
+Breaks.
+Holidays.
+Employee availability windows.
+Synthetic Cost Savings
+Cost savings are simulated and should not be presented as guaranteed real-world savings.
+
+37. Future Improvements
+A production version could include:
+
+Real ERP Integration
+
+Integration with:
+SAP
+
+Oracle ERP
+Microsoft Dynamics
+Custom ERP APIs
+Real Historical Data
+Using historical:
+
+Work orders
+Completion times
+
+Employee productivity
+
+Task complexity
+Department performance
+
+Employee Availability
+Integration with:
+Vacations
+Sick leaves
+Attendance
+Shift attendance
+Working calendars
+Advanced Skills Matrix
+A skills matrix (instead of a single number) would include:
+Programming
+Manufacturing
+Finance
+Procurement
+Logistics
+Certifications
+Experience
+Advanced Scheduling
+Scheduling would include:
+Start time
+End time
+Shift
+Deadline
+Breaks
+Holidays
+Dependencies
+Explainable AI
+Using SHAP or another framework, the rationale behind suggested task allocation could be explained.
+Database Integration
+Using:
+PostgreSQL
+MySQL
+MS SQL
+Instead of in-memory data tables
+Authentication
+For enterprise deployment, user authentication and role management should be added.
+
+38. Business Value
+The proposed system demonstrates how artificial intelligence can be leveraged to improve ERP workforce planning.
+The business value includes:
+Improved workforce planning forecasts
+Reduced overtime costs
+Improved employee utilization
+Improved task allocation
+Improved labor-cost visibility
+Accelerated human resource planning decisions
+Operational decision support in workforce planning
+Scenario planning and analysis
+Identification of understaffed areas
+Identification of idle labor resources
+The key innovation shown in the project is the combination of
+Machine Learning → Prediction
+followed by
+Operations Research → Decision
+which results in a more meaningful and powerful system than either could be alone.
+39. Full Technology Stack
+Layer Technology
+Programming Python
+
+UI Streamlit
+Data Processing Pandas
+Numerical Processing NumPy
+ML Model 1 XGBoost
+ML Model 2 Random Forest
+ML Evaluation scikit-learn
+Optimization Google OR-Tools
+
+Optimization Backend SCIP
+Notebook Format Jupyter/IPYNB
+Data Synthetic ERP/HR
+Visualization Streamlit charts
+Deployment Prototype Local machine / Google Colab
+
+40. Development Timeline
+The project was developed over a ten-day period from 25 August 2026 to 3 September 2026, with 3 September 2026 used as the final project day.
+25 August 2026 – Project Initiation
+Activities:
+– Defined the ERP workforce optimization problem
+– Identified HR workforce planning as the application domain
+– Established the predictive + prescriptive analytics concept
+– Selected Python programming language
+– Placed the UI design in the Streamlit framework
+Milestone: Initial system concept
+26 August 2026 – ERP and HR Data Structure
+Activities:
+– Defined synthetic ERP task structure
+– Defined employee roster structure
+– Added departments
+– Added complexity
+– Added deliverables
+– Added employee skill levels
+– Added hourly labor rates
+– Added regular and overtime capacity
+Milestone: Initial ERP/HR data structure
+27 August 2026 – Synthetic Dataset and Workload Formula
+Activities:
+– Implemented record generation (1,800)
+– Added departments
+– Added complexity, deliverables
+– Added skills, priorities
+– Added productivity, shift-efficiency
+– Implemented synthetic workload/actual-hours calculation
+– Added random observation noise
+Milestone: Training dataset generation
+28 August 2026 – Machine Learning Models
+Activities:
+– Implemented XGBoost regression
+– Implemented Random Forest regression
+– Added train/test split
+– Added model training
+– Added model predictions
+– Added random seed for reproducibility
+– Added model comparison
+Milestone: Initial ML forecasting engine
+29 August 2026 – Model Evaluation
+Activities:
+– Added MAE calculation
+– Added RMSE calculation
+– Added R² calculation
+– Added model performance display
+– Added feature importance analysis
+– Added model selector in the Streamlit sidebar
+Milestone: ML evaluation framework
+30 August 2026 – Data Cleaning and Prediction Pipeline
+Activities:
+– Implemented task data cleaning
+– Implemented employee data cleaning
+– Added missing value treatment
+– Added type conversion
+– Added range validation
+– Added department encoding
+– Added column alignment
+– ERP data to ML pipeline connection
+Milestone: End-to-end ERP-to-forecast pipeline
+31 August 2026 – Workforce Optimization
+Activities:
+– Google OR-Tools implementation
+– Employee-task assignment variables definition
+– Employee skill constraints
+– Employee capacity constraints
+– Overtime variables definition
+– Overtime constraints
+– Labor-cost objective function
+– Employee preference incentivization
+– Task priority incentivization
+Milestone: Workforce optimization engine
+1 September 2026 – Cost Analysis and HR Recommendations
+Activities:
+– Manual workforce baseline implementation
+– Baseline cost calculation
+– AI optimized-cost calculation
+– Savings calculation
+– Saving percentage calculation
+– Employee utilization calculation
+– Automated HR recommendation generation
+– Employee cost visualization
+Milestone: Business-value analysis
+2 September 2026 – Streamlit Dashboard and UI
+Activities:
+– Streamlit application creation
+– Dashboard creation
+– ERP Planning tab
+– ML Forecast tab
+– Workforce Optimization tab
+– Cost Analysis tab
+– Technical Report tab
+– Custom CSS injection
+– Charts and metrics
+– Session-state optimization
+Milestone: ERP workforce dashboard
+3 September 2026 – Final Documentation, Testing and Project Finalization
+Activities:
+– Normal workforce scenarios testing
+– Infeasible workforce scenarios testing
+– Model switch testing
+– Editable ERP data testing
+– Optimization controls testing
+– Cost calculation review
+– Final technical document creation
+– Limitations, future development section
+– Colab notebook downloadable
+– Application final review
+– Final project documentation
+– System architecture and requirements review
+
+Milestone: Final application, documentation and project deliverables
+Final Development Period
+Start Date: 25 August 2026
+Final Development Day: 3 September 2026
+Total Development Duration: 10 days
+Final Document Date: 3 September 2026
+Version: 1.0 — Final
