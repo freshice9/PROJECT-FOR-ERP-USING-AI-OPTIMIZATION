@@ -27,15 +27,9 @@ Install Required Packages
 pip install numpy pandas streamlit xgboost scikit-learn ortools
 
 Run the Streamlit Application
-If the main application file is called app.py, run:
+Run:
 
 streamlit run app.py
-
-If the main application file has another name, replace app.py with the correct filename.
-
-For example:
-
-streamlit run main.py
 
 Open the Application
 After starting the application, the terminal will display something similar to:
